@@ -79,3 +79,6 @@ reports/
 exports/
 *.tmp
 *.backup
+
+# Claude Code configuration
+.claude/
