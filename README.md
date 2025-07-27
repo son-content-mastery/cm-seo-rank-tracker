@@ -1,8 +1,8 @@
-# 🐍 SEO Rank Tracker
+# SEO Rank Tracker
 
 A comprehensive SEO rank tracking application built with Python Flask, PostgreSQL, and Celery for automated keyword ranking monitoring, email reporting, and data analytics.
 
-## ✨ Features
+## Features
 
 - **Automated Rank Tracking**: Weekly scheduled checks using SerpAPI
 - **Email Reports**: Beautiful HTML email reports with ranking changes
@@ -68,7 +68,7 @@ docker-compose logs -f
 open http://localhost:5000
 ```
 
-## 📊 Application Structure
+## Application Structure
 
 ```
 seo-rank-tracker/
@@ -119,7 +119,7 @@ Default keywords are configured in `app/config.py`. You can:
 2. **Use the web interface** to add/remove keywords
 3. **Use environment variables** (add `CUSTOM_KEYWORDS=keyword1,keyword2,keyword3`)
 
-## 📈 Usage
+## Usage
 
 ### Web Dashboard
 
@@ -181,7 +181,7 @@ docker-compose exec web python -c "from app.tasks import run_manual_check; run_m
 docker-compose exec web python -c "from app.tasks import run_manual_cleanup; run_manual_cleanup()"
 ```
 
-## 📊 Database Schema
+## Database Schema
 
 ### Tables
 
@@ -228,7 +228,7 @@ celery -A app.tasks beat --loglevel=info
 4. **Templates**: Add HTML templates in `app/templates/`
 5. **Utils**: Add utilities in `app/utils/`
 
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -273,7 +273,7 @@ docker-compose logs scheduler
 docker-compose logs db
 ```
 
-## 📈 Performance Optimization
+## Performance Optimization
 
 ### Rate Limiting
 
