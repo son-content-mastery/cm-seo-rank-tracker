@@ -1,326 +1,326 @@
-# ระบบติดตาม SEO Rank Tracker
+# 🐍 SEO Rank Tracker
 
-แอปพลิเคชันติดตามอันดับ SEO ที่สร้างด้วย Python Flask, PostgreSQL และ Celery สำหรับการติดตามอันดับคำหลักอัตโนมัติ รายงานอีเมล และการวิเคราะห์ข้อมูล
+A comprehensive SEO rank tracking application built with Python Flask, PostgreSQL, and Celery for automated keyword ranking monitoring, email reporting, and data analytics.
 
-## ฟีเจอร์หลัก
+## ✨ Features
 
-- **ติดตามอันดับอัตโนมัติ**: ตรวจสอบรายสัปดาห์โดยใช้ SerpAPI
-- **รายงานอีเมล**: รายงาน HTML สวยงามพร้อมการเปลี่ยนแปลงอันดับ
-- **แดชบอร์ดเว็บ**: ดูอันดับปัจจุบันและการเปลี่ยนแปลงแบบเรียลไทม์
-- **REST API**: จุดเชื่อมต่อ JSON สำหรับการรวมระบบภายนอก
-- **การประมวลผลเบื้องหลัง**: ประมวลผลแบบอะซิงค์ด้วย Celery
-- **พร้อมใช้ Docker**: การปรับใช้แบบคอนเทนเนอร์สมบูรณ์
-- **วิเคราะห์ตำแหน่ง**: ติดตามการปรับปรุง การลดลง และประวัติอันดับ
-- **การจำกัดอัตรา**: การปฏิบัติตามการจำกัดอัตรา API ในตัว
+- **Automated Rank Tracking**: Weekly scheduled checks using SerpAPI
+- **Email Reports**: Beautiful HTML email reports with ranking changes
+- **Web Dashboard**: Real-time view of current rankings and changes
+- **REST API**: JSON endpoints for external integrations
+- **Background Processing**: Celery-powered async task processing
+- **Docker Ready**: Complete containerized deployment
+- **Position Analysis**: Track improvements, declines, and ranking history
+- **Rate Limiting**: Built-in API rate limiting compliance
 
-## เริ่มต้นใช้งาน
+## 🚀 Quick Start
 
-### สิ่งที่ต้องเตรียมพร้อม (Prerequisite)
+### Prerequisites
 
-- Docker และ Docker Compose
-- บัญชี SerpAPI และ API key
-- บัญชี Gmail พร้อม app password (สำหรับรายงานอีเมล)
+- Docker and Docker Compose
+- SerpAPI account and API key
+- Gmail account with app password (for email reports)
 
-### 1. โคลนและตั้งค่า
+### 1. Clone and Setup
 
 ```bash
-# โคลนโครงการ
-git clone <your-repo-url>
-cd seo-rank-tracker
+# Clone the repository
+git clone https://github.com/son-content-mastery/cm-seo-rank-tracker.git
+cd cm-seo-rank-tracker
 
-# คัดลอกไฟล์ environment
+# Copy environment file
 cp .env.example .env
 
-# แก้ไข .env ด้วยการกำหนดค่าของคุณ
+# Edit .env with your configuration
 nano .env
 ```
 
-### 2. กำหนดค่า Environment
+### 2. Configure Environment
 
-อัปเดต `.env` ด้วยการตั้งค่าของคุณ:
+Update `.env` with your settings:
 
 ```bash
-# จำเป็น: SerpAPI key
+# Required: SerpAPI key
 SERPAPI_KEY=your_serpapi_key_here
 
-# จำเป็น: ข้อมูลประจำตัว Gmail
+# Required: Gmail credentials
 GMAIL_USER=your-email@gmail.com
 GMAIL_PASSWORD=your_gmail_app_password
 
-# จำเป็น: โดเมนและอีเมลของคุณ
-TARGET_DOMAIN=yourwebsite.com
+# Required: Your domain and email
+TARGET_DOMAIN=yourdomain.com
 RECIPIENT_EMAIL=your-email@gmail.com
 
-# สร้าง secret key
+# Generate a secret key
 SECRET_KEY=your_secret_key_here
 ```
 
-### 3. ปรับใช้ด้วย Docker
+### 3. Deploy with Docker
 
 ```bash
-# เริ่มบริการทั้งหมด
+# Start all services
 docker-compose up -d
 
-# ตรวจสอบ logs
+# Check logs
 docker-compose logs -f
 
-# เข้าถึงแอปพลิเคชัน
+# Access the application
 open http://localhost:5000
 ```
 
-## โครงสร้างแอปพลิเคชัน
+## 📊 Application Structure
 
 ```
 seo-rank-tracker/
-├── docker-compose.yml          # การกำหนดค่าบริการ Docker
-├── Dockerfile                  # คอนเทนเนอร์แอปพลิเคชัน
-├── requirements.txt           # การพึ่งพา Python
-├── .env.example              # เทมเพลต Environment
+├── docker-compose.yml          # Docker services configuration
+├── Dockerfile                  # Application container
+├── requirements.txt           # Python dependencies
+├── .env.example              # Environment template
 ├── app/
 │   ├── __init__.py           # Flask application factory
-│   ├── config.py             # การตั้งค่าการกำหนดค่า
-│   ├── models.py             # โมเดลฐานข้อมูล
-│   ├── routes.py             # เส้นทางเว็บและจุดเชื่อมต่อ API
-│   ├── tasks.py              # งาน Celery เบื้องหลัง
-│   ├── templates/            # เทมเพลต HTML
+│   ├── config.py             # Configuration settings
+│   ├── models.py             # Database models
+│   ├── routes.py             # Web routes and API endpoints
+│   ├── tasks.py              # Celery background tasks
+│   ├── templates/            # HTML templates
 │   │   ├── base.html
 │   │   ├── dashboard.html
 │   │   └── keywords.html
-│   ├── email_templates/      # เทมเพลตอีเมล
+│   ├── email_templates/      # Email templates
 │   │   └── weekly_report.html
-│   └── utils/                # โมดูลยูทิลิตี้
-│       ├── serpapi_client.py # การรวม SerpAPI
-│       ├── email_sender.py   # ฟังก์ชันอีเมล
-│       └── report_generator.py # การสร้างรายงาน
+│   └── utils/                # Utility modules
+│       ├── serpapi_client.py # SerpAPI integration
+│       ├── email_sender.py   # Email functionality
+│       └── report_generator.py # Report generation
 └── migrations/
-    └── init.sql              # สคีมาฐานข้อมูล
+    └── init.sql              # Database schema
 ```
 
-## 🔧 การกำหนดค่า
+## 🔧 Configuration
 
-### ตัวแปร Environment
+### Environment Variables
 
-| ตัวแปร | คำอธิบาย | จำเป็น | ค่าเริ่มต้น |
+| Variable | Description | Required | Default |
 |----------|-------------|----------|---------|
-| `SERPAPI_KEY` | SerpAPI key ของคุณ | ใช่ | - |
-| `GMAIL_USER` | ที่อยู่ Gmail สำหรับส่งรายงาน | ใช่ | - |
-| `GMAIL_PASSWORD` | รหัสผ่านแอป Gmail | ใช่ | - |
-| `TARGET_DOMAIN` | โดเมนที่จะติดตามอันดับ | ใช่ | yourwebsite.com |
-| `RECIPIENT_EMAIL` | อีเมลสำหรับรับรายงาน | ใช่ | - |
-| `SECRET_KEY` | Flask secret key | ใช่ | - |
-| `DATABASE_URL` | สตริงการเชื่อมต่อ PostgreSQL | ไม่ | กำหนดค่าอัตโนมัติ |
-| `REDIS_URL` | สตริงการเชื่อมต่อ Redis | ไม่ | กำหนดค่าอัตโนมัติ |
+| `SERPAPI_KEY` | Your SerpAPI key | Yes | - |
+| `GMAIL_USER` | Gmail address for sending reports | Yes | - |
+| `GMAIL_PASSWORD` | Gmail app password | Yes | - |
+| `TARGET_DOMAIN` | Domain to track rankings for | Yes | yourdomain.com |
+| `RECIPIENT_EMAIL` | Email for receiving reports | Yes | - |
+| `SECRET_KEY` | Flask secret key | Yes | - |
+| `DATABASE_URL` | PostgreSQL connection string | No | Auto-configured |
+| `REDIS_URL` | Redis connection string | No | Auto-configured |
 
-### การกำหนดค่าคำหลัก
+### Keywords Configuration
 
-คำหลักเริ่มต้นถูกกำหนดค่าใน `app/config.py` คุณสามารถ:
+Default keywords are configured in `app/config.py`. You can:
 
-1. **แก้ไขไฟล์ config** เพื่อเปลี่ยน keywords ที่ต้องการ
-2. **ใช้อินเทอร์เฟซเว็บ** เพื่อเพิ่ม/ลบคำหลัก
-3. **ใช้ตัวแปร environment** (เพิ่ม `CUSTOM_KEYWORDS=keyword1,keyword2,keyword3`)
+1. **Edit the config file** to change default keywords
+2. **Use the web interface** to add/remove keywords
+3. **Use environment variables** (add `CUSTOM_KEYWORDS=keyword1,keyword2,keyword3`)
 
-## การใช้งาน
+## 📈 Usage
 
-### แดชบอร์ดเว็บ
+### Web Dashboard
 
-เข้าถึงแดชบอร์ดที่ `http://localhost:5000`:
+Access the dashboard at `http://localhost:5000`:
 
-- **แดชบอร์ด**: ดูอันดับปัจจุบันและการเปลี่ยนแปลง
-- **คำหลัก**: จัดการ keywords ที่กำลัง track
-- **การตรวจสอบแบบแมนนวล**: เรียกการตรวจสอบอันดับทันที
-- **ส่งรายงาน**: สร้างและส่งรายงานอีเมล
+- **Dashboard**: View current rankings and changes
+- **Keywords**: Manage tracked keywords
+- **Manual Checks**: Trigger immediate ranking checks
+- **Send Reports**: Generate and send email reports
 
-### จุดเชื่อมต่อ API
+### API Endpoints
 
-| จุดเชื่อมต่อ | วิธี | คำอธิบาย |
+| Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/rankings` | GET | อันดับปัจจุบัน (JSON) |
-| `/api/keyword/{id}/history` | GET | ประวัติอันดับคำหลัก |
-| `/health` | GET | การตรวจสอบสุขภาพแอปพลิเคชัน |
-| `/trigger-check` | POST | การตรวจสอบอันดับแบบแมนนวล |
-| `/send-report` | POST | ส่งรายงานอีเมล |
+| `/api/rankings` | GET | Current rankings (JSON) |
+| `/api/keyword/{id}/history` | GET | Keyword ranking history |
+| `/health` | GET | Application health check |
+| `/trigger-check` | POST | Manual ranking check |
+| `/send-report` | POST | Send email report |
 
-### ตัวอย่างการใช้งาน API
+### Example API Usage
 
 ```bash
-# รับอันดับปัจจุบัน
+# Get current rankings
 curl http://localhost:5000/api/rankings
 
-# รับประวัติคำหลัก
+# Get keyword history
 curl http://localhost:5000/api/keyword/1/history?days=30
 
-# ตรวจสอบสุขภาพ
+# Health check
 curl http://localhost:5000/health
 ```
 
-## Email Report
+## 📧 Email Reports
 
-รายงานอีเมลรายสัปดาห์ประกอบด้วย:
+Weekly email reports include:
 
-- **สถิติสรุป**: คำหลักทั้งหมด อัตราความครอบคลุม ตำแหน่งเฉลี่ย
-- **การวิเคราะห์การเปลี่ยนแปลง**: การปรับปรุง การลดลง อันดับใหม่
-- **ตารางรายละเอียด**: คำหลักทั้งหมดพร้อมตำแหน่งและการเปลี่ยนแปลง
-- **ตัวบ่งชี้ภาพ**: ตัวบ่งชี้การเปลี่ยนแปลงแบบสีรหัส
+- **Summary Statistics**: Total keywords, coverage rate, average position
+- **Change Analysis**: Improvements, declines, new rankings
+- **Detailed Table**: All keywords with positions and changes
+- **Visual Indicators**: Color-coded change indicators
 
-รายงานจะถูกส่งอัตโนมัติทุกวันจันทร์เวลา 9.00 น. UTC
+Reports are automatically sent every Monday at 9 AM UTC.
 
-## การจัดตารางเวลา
+## 🔄 Scheduling
 
-แอปพลิเคชันใช้ Celery Beat สำหรับการจัดตารางเวลา:
+The application uses Celery Beat for scheduling:
 
-- **การตรวจสอบอันดับรายสัปดาห์**: วันจันทร์ 9:00 น. UTC
-- **การทำความสะอาดข้อมูล**: วันอาทิตย์ 2:00 น. UTC (ลบข้อมูลที่เก่ากว่า 365 วัน)
+- **Weekly Rank Check**: Monday 9:00 AM UTC
+- **Data Cleanup**: Sunday 2:00 AM UTC (removes data older than 365 days)
 
-### การดำเนินการแบบแมนนวล
+### Manual Operations
 
 ```bash
-# รันการตรวจสอบแบบแมนนวล
+# Run manual check
 docker-compose exec web python -c "from app.tasks import run_manual_check; run_manual_check()"
 
-# รันการทำความสะอาด
+# Run cleanup
 docker-compose exec web python -c "from app.tasks import run_manual_cleanup; run_manual_cleanup()"
 ```
 
-## Database Schema
+## 📊 Database Schema
 
-### ตาราง
+### Tables
 
-- **keywords**: เก็บคำหลักที่ติดตาม
-- **rankings**: ข้อมูลอันดับรายวัน
-- **ranking_changes**: ประวัติการเปลี่ยนแปลงตำแหน่ง
+- **keywords**: Stores tracked keywords
+- **rankings**: Daily ranking data
+- **ranking_changes**: Position change history
 
-### คุณสมบัติหลัก
+### Key Features
 
-- **การสร้างดัชนีอัตโนมัติ** เพื่อประสิทธิภาพการสืบค้นที่เหมาะสม
-- **มุมมองฐานข้อมูล** สำหรับการสืบค้นที่ซับซ้อน
-- **ฟังก์ชัน** สำหรับการคำนวณทางสถิติ
-- **ข้อจำกัด** สำหรับความสมบูรณ์ของข้อมูล
+- **Automatic indexing** for optimal query performance
+- **Database views** for complex queries
+- **Functions** for statistical calculations
+- **Constraints** for data integrity
 
-## Development
+## 🔧 Development
 
-### การพัฒนาในเครื่อง (Local Development)
+### Local Development
 
 ```bash
-# ติดตั้งการพึ่งพา
+# Install dependencies
 pip install -r requirements.txt
 
-# ตั้งค่าฐานข้อมูลในเครื่อง
+# Set up local database
 createdb seo_tracker
 psql seo_tracker < migrations/init.sql
 
-# รันเซิร์ฟเวอร์การพัฒนา Flask
+# Run Flask development server
 export FLASK_APP=app
 export FLASK_ENV=development
 flask run
 
-# รัน Celery worker (เทอร์มินัลแยก)
+# Run Celery worker (separate terminal)
 celery -A app.tasks worker --loglevel=info
 
-# รัน Celery beat (เทอร์มินัลแยก)
+# Run Celery beat (separate terminal)
 celery -A app.tasks beat --loglevel=info
 ```
 
-### การเพิ่มคุณสมบัติ
+### Adding Features
 
-1. **โมเดล**: เพิ่มตารางใหม่ใน `app/models.py`
-2. **เส้นทาง**: เพิ่มจุดเชื่อมต่อใน `app/routes.py`
-3. **งาน**: เพิ่มงานเบื้องหลังใน `app/tasks.py`
-4. **เทมเพลต**: เพิ่มเทมเพลต HTML ใน `app/templates/`
-5. **ยูทิลิตี้**: เพิ่มยูทิลิตี้ใน `app/utils/`
+1. **Models**: Add new tables in `app/models.py`
+2. **Routes**: Add endpoints in `app/routes.py`
+3. **Tasks**: Add background jobs in `app/tasks.py`
+4. **Templates**: Add HTML templates in `app/templates/`
+5. **Utils**: Add utilities in `app/utils/`
 
-## การแก้ไขปัญหา
+## 🚨 Troubleshooting
 
-### ปัญหาทั่วไป
+### Common Issues
 
-**ปัญหา API Key**
+**API Key Issues**
 ```bash
-# ตรวจสอบ SerpAPI key
+# Check SerpAPI key
 curl "https://serpapi.com/account" -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
-**ปัญหาอีเมล**
+**Email Issues**
 ```bash
-# ทดสอบข้อมูลประจำตัว Gmail
+# Test Gmail credentials
 python -c "import smtplib; smtplib.SMTP('smtp.gmail.com', 587).starttls()"
 ```
 
-**ปัญหาฐานข้อมูล**
+**Database Issues**
 ```bash
-# ตรวจสอบการเชื่อมต่อฐานข้อมูล
+# Check database connection
 docker-compose exec db psql -U seo_user -d seo_tracker -c "SELECT COUNT(*) FROM keywords;"
 ```
 
-**ปัญหา Celery**
+**Celery Issues**
 ```bash
-# ตรวจสอบสถานะ Celery
+# Check Celery status
 docker-compose exec worker celery -A app.tasks status
 docker-compose exec scheduler celery -A app.tasks beat --dry-run
 ```
 
-### บันทึก
+### Logs
 
 ```bash
-# บันทึกแอปพลิเคชัน
+# Application logs
 docker-compose logs web
 
-# บันทึก Worker
+# Worker logs
 docker-compose logs worker
 
-# บันทึก Scheduler
+# Scheduler logs
 docker-compose logs scheduler
 
-# บันทึกฐานข้อมูล
+# Database logs
 docker-compose logs db
 ```
 
-## การปรับปรุงประสิทธิภาพ
+## 📈 Performance Optimization
 
-### การจำกัดอัตรา
+### Rate Limiting
 
-- การเรียก SerpAPI ถูกจำกัดอัตราเป็น 1.2 วินาทีระหว่างการร้องขอ
-- กำหนดค่าได้ผ่านตัวแปร environment `SERPAPI_RATE_LIMIT`
-- การประมวลผลแบบแบทช์สำหรับคำหลักหลายคำ
+- SerpAPI calls are rate-limited to 1.2 seconds between requests
+- Configurable via `SERPAPI_RATE_LIMIT` environment variable
+- Batch processing for multiple keywords
 
-### การปรับปรุงฐานข้อมูล
+### Database Optimization
 
-- การทำความสะอาดข้อมูลเก่าอัตโนมัติ (365+ วัน)
-- การสืบค้นที่มีดัชนีสำหรับการค้นหาที่รวดเร็ว
-- มุมมองฐานข้อมูลสำหรับการรายงานที่ซับซ้อน
+- Automatic cleanup of old data (365+ days)
+- Indexed queries for fast lookups
+- Database views for complex reporting
 
-### การตรวจสอบ
+### Monitoring
 
-- จุดเชื่อมต่อการตรวจสอบสุขภาพที่ `/health`
-- การบันทึกที่ครอบคลุมทั่วทั้งแอปพลิเคชัน
-- การตรวจสอบงานผ่าน Celery
+- Health check endpoint at `/health`
+- Comprehensive logging throughout the application
+- Task monitoring via Celery
 
-## 🔒 ข้อควรพิจารณาด้านความปลอดภัย (Security Concern)
+## 🔒 Security Considerations
 
-- **ตัวแปร Environment**: อย่าคอมมิตไฟล์ `.env`
-- **API Keys**: ใช้ตัวแปร environment เท่านั้น
-- **ฐานข้อมูล**: ใช้รหัสผ่านที่แข็งแกร่ง
-- **อีเมล**: ใช้รหัสผ่านแอป Gmail ไม่ใช่รหัสผ่านบัญชี
-- **เครือข่าย**: พิจารณากฎไฟร์วอลล์สำหรับการใช้งานจริง
+- **Environment Variables**: Never commit `.env` files
+- **API Keys**: Use environment variables only
+- **Database**: Use strong passwords
+- **Email**: Use Gmail app passwords, not account passwords
+- **Network**: Consider firewall rules for production
 
-## ใบอนุญาต
+## 📝 License
 
-โครงการนี้ได้รับอนุญาตภายใต้ MIT License - ดูไฟล์ LICENSE สำหรับรายละเอียด
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🤝 การมีส่วนร่วม
+## 🤝 Contributing
 
-1. Fork repository
-2. สร้าง feature branch
-3. ทำการเปลี่ยนแปลงของคุณ
-4. เพิ่มการทดสอบหากเหมาะสม
-5. ส่ง pull request
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-## การสนับสนุน
+## 📞 Support
 
-สำหรับปัญหาและคำถาม:
+For issues and questions:
 
-1. ตรวจสอบ README นี้
-2. ตรวจสอบบันทึกแอปพลิเคชัน
-3. ตรวจสอบส่วนการแก้ไขปัญหา
-4. เปิด issue บน GitHub
+1. Check this README
+2. Review application logs
+3. Check the troubleshooting section
+4. Open an issue on GitHub
 
 ---
 
