@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Keywords - SEO Rank Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2">Keyword Management</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addKeywordModal">
+            Add Keyword
+        </button>
+    </div>
+</div>
+
+<!-- Keywords Table -->
+<div class="stat-card">
+    <div class="card-header bg-white border-bottom">
+        <h5 class="mb-0">All Keywords</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if keywords %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Keyword</th>
+                        <th>Domain</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Latest Position</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for keyword in keywords %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold">{{ keyword.keyword }}</div>
+                        </td>
+                        <td>
+                            <span class="text-muted">{{ keyword.domain }}</span>
+                        </td>
+                        <td>
+                            {% if keyword.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="text-muted">{{ keyword.created_at.strftime('%Y-%m-%d') if keyword.created_at else 'Unknown' }}</span>
+                        </td>
+                        <td>
+                            {% if keyword.latest_ranking %}
+                                {% if keyword.latest_ranking.position %}
+                                    {% if keyword.latest_ranking.position <= 3 %}
+                                        <span class="position-excellent">#{{ keyword.latest_ranking.position }}</span>
+                                    {% elif keyword.latest_ranking.position <= 10 %}
+                                        <span class="position-good">#{{ keyword.latest_ranking.position }}</span>
+                                    {% else %}
+                                        <span class="position-poor">#{{ keyword.latest_ranking.position }}</span>
+                                    {% endif %}
+                                    <small class="text-muted">({{ keyword.latest_ranking.check_date.strftime('%m/%d') }})</small>
+                                {% else %}
+                                    <span class="text-muted">Not in top 100</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">Never checked</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <form method="POST" action="{{ url_for('main.toggle_keyword', keyword_id=keyword.id) }}" class="d-inline">
+                                    {% if keyword.is_active %}
+                                        <button type="submit" class="btn btn-outline-warning btn-sm" 
+                                                onclick="return confirm('Deactivate this keyword?')">
+                                            <i class="fas fa-pause"></i>
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                    {% endif %}
+                                </form>
+                                <button type="button" class="btn btn-outline-primary btn-sm" 
+                                        onclick="checkKeyword({{ keyword.id }})">
+                                    <i class="fas fa-sync"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-info btn-sm" 
+                                        onclick="viewHistory({{ keyword.id }})">
+                                    <i class="fas fa-history"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No keywords found</h5>
+            <p class="text-muted">Add your first keyword to start tracking rankings.</p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addKeywordModal">
+                Add First Keyword
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Statistics -->
+{% if keywords %}
+<div class="row mt-4">
+    <div class="col-md-3 mb-3">
+        <div class="stat-card p-3 text-center">
+            <div class="stat-number text-primary">{{ keywords|length }}</div>
+            <div class="text-muted">Total Keywords</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card p-3 text-center">
+            <div class="stat-number text-success">{{ keywords|selectattr('is_active')|list|length }}</div>
+            <div class="text-muted">Active</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card p-3 text-center">
+            <div class="stat-number text-warning">{{ keywords|rejectattr('is_active')|list|length }}</div>
+            <div class="text-muted">Inactive</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card p-3 text-center">
+            <div class="stat-number text-info">{{ keywords|selectattr('latest_ranking')|list|length }}</div>
+            <div class="text-muted">With Data</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Add Keyword Modal -->
+<div class="modal fade" id="addKeywordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Keyword</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('main.add_keyword') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="keyword" class="form-label">Keyword *</label>
+                        <input type="text" class="form-control" id="keyword" name="keyword" 
+                               placeholder="Enter keyword to track" required>
+                        <div class="form-text">Enter the exact search term you want to track rankings for.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="domain" class="form-label">Domain</label>
+                        <input type="text" class="form-control" id="domain" name="domain" 
+                               placeholder="yourwebsite.com" value="{{ config.TARGET_DOMAIN or 'yourwebsite.com' }}">
+                        <div class="form-text">The domain to check rankings for (without http/https).</div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> New keywords will be automatically included in the next scheduled check, 
+                        or you can run a manual check immediately after adding.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Keyword</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Actions -->
+{% if keywords %}
+<div class="mt-4">
+    <div class="stat-card p-3">
+        <h6 class="mb-3">Bulk Actions</h6>
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary" onclick="bulkActivate()">
+                <i class="fas fa-play"></i> Activate All
+            </button>
+            <button type="button" class="btn btn-outline-warning" onclick="bulkDeactivate()">
+                <i class="fas fa-pause"></i> Deactivate All
+            </button>
+            <button type="button" class="btn btn-outline-info" onclick="checkAllActive()">
+                <i class="fas fa-sync"></i> Check All Active
+            </button>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Check single keyword
+function checkKeyword(keywordId) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ url_for("main.trigger_manual_check") }}';
+    
+    const typeInput = document.createElement('input');
+    typeInput.type = 'hidden';
+    typeInput.name = 'type';
+    typeInput.value = 'single';
+    
+    const keywordInput = document.createElement('input');
+    keywordInput.type = 'hidden';
+    keywordInput.name = 'keyword_id';
+    keywordInput.value = keywordId;
+    
+    form.appendChild(typeInput);
+    form.appendChild(keywordInput);
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// View keyword history
+function viewHistory(keywordId) {
+    window.open(`/api/keyword/${keywordId}/history`, '_blank');
+}
+
+// Bulk actions
+function bulkActivate() {
+    if (confirm('Activate all keywords?')) {
+        // Implementation would require additional backend support
+        alert('Bulk activate feature - would need backend implementation');
+    }
+}
+
+function bulkDeactivate() {
+    if (confirm('Deactivate all keywords?')) {
+        // Implementation would require additional backend support
+        alert('Bulk deactivate feature - would need backend implementation');
+    }
+}
+
+function checkAllActive() {
+    if (confirm('Run ranking check for all active keywords?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("main.trigger_manual_check") }}';
+        
+        const typeInput = document.createElement('input');
+        typeInput.type = 'hidden';
+        typeInput.name = 'type';
+        typeInput.value = 'all';
+        
+        form.appendChild(typeInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Auto-focus on keyword input when modal opens
+document.getElementById('addKeywordModal').addEventListener('shown.bs.modal', function () {
+    document.getElementById('keyword').focus();
+});
+</script>
+{% endblock %}

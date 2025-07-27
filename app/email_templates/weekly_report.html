@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly SEO Report</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .report-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .report-date {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+        }
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 0;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .section {
+            padding: 30px;
+        }
+        .section h2 {
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .rankings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .rankings-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .rankings-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .rankings-table tr:hover {
+            background: #f8f9fa;
+        }
+        .change-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        .improvement {
+            background: #d4edda;
+            color: #155724;
+        }
+        .decline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .new-ranking {
+            background: #cce7ff;
+            color: #004085;
+        }
+        .lost-ranking {
+            background: #f5c6cb;
+            color: #721c24;
+        }
+        .no-change {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        .position {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .position.top-3 {
+            color: #28a745;
+        }
+        .position.top-10 {
+            color: #ffc107;
+        }
+        .keyword-cell {
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+        .url-cell {
+            max-width: 250px;
+            word-wrap: break-word;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .summary-stat {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .summary-stat .number {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .summary-stat .label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .improvements .number { color: #28a745; }
+        .declines .number { color: #dc3545; }
+        .new-entries .number { color: #007bff; }
+        .lost-entries .number { color: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="header">
+            <h1>📊 Weekly SEO Report</h1>
+            <div class="report-date">{{ report_date }}</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.ranked_keywords }}</div>
+                <div class="stat-label">Keywords Ranking</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.ranking_percentage }}%</div>
+                <div class="stat-label">Coverage Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.average_position }}</div>
+                <div class="stat-label">Average Position</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.top_10_count }}</div>
+                <div class="stat-label">Top 10 Rankings</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📈 Week Overview</h2>
+            <div class="summary-stats">
+                <div class="summary-stat improvements">
+                    <div class="number">{{ stats.improvements }}</div>
+                    <div class="label">Improvements</div>
+                </div>
+                <div class="summary-stat declines">
+                    <div class="number">{{ stats.declines }}</div>
+                    <div class="label">Declines</div>
+                </div>
+                <div class="summary-stat new-entries">
+                    <div class="number">{{ stats.new_rankings }}</div>
+                    <div class="label">New Rankings</div>
+                </div>
+                <div class="summary-stat lost-entries">
+                    <div class="number">{{ stats.lost_rankings }}</div>
+                    <div class="label">Lost Rankings</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔍 Detailed Rankings</h2>
+            <table class="rankings-table">
+                <thead>
+                    <tr>
+                        <th>Keyword</th>
+                        <th>Position</th>
+                        <th>Change</th>
+                        <th>URL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ranking in rankings %}
+                    <tr>
+                        <td class="keyword-cell">{{ ranking.keyword }}</td>
+                        <td class="position {% if ranking.position and ranking.position <= 3 %}top-3{% elif ranking.position and ranking.position <= 10 %}top-10{% endif %}">
+                            {{ format_position(ranking.position) }}
+                        </td>
+                        <td>
+                            <span class="change-indicator {{ get_change_class(ranking.change_direction) }}">
+                                {{ get_change_icon(ranking.change_direction) }}
+                                {% if ranking.position_change %}
+                                    {% if ranking.position_change > 0 %}+{{ ranking.position_change }}{% else %}{{ ranking.position_change }}{% endif %}
+                                {% endif %}
+                                {{ ranking.change_direction|title }}
+                            </span>
+                        </td>
+                        <td class="url-cell">
+                            {% if ranking.url %}
+                                <a href="{{ ranking.url }}" target="_blank">{{ ranking.url[:50] }}{% if ranking.url|length > 50 %}...{% endif %}</a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>📧 This report was automatically generated by SEO Rank Tracker</p>
+            <p>Report generated on {{ report_date }} | Tracking {{ stats.total_keywords }} keywords</p>
+        </div>
+    </div>
+</body>
+</html>

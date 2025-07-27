@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql://seo_user:seo_password@db:5432/seo_tracker
+      - REDIS_URL=redis://redis:6379/0
+      - SERPAPI_KEY=${SERPAPI_KEY}
+      - GMAIL_USER=${GMAIL_USER}
+      - GMAIL_PASSWORD=${GMAIL_APP_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+      - TARGET_DOMAIN=${TARGET_DOMAIN}
+      - RECIPIENT_EMAIL=${RECIPIENT_EMAIL}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./app:/app/app
+
+  worker:
+    build: .
+    command: celery -A app.tasks:celery worker --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://seo_user:seo_password@db:5432/seo_tracker
+      - REDIS_URL=redis://redis:6379/0
+      - SERPAPI_KEY=${SERPAPI_KEY}
+      - GMAIL_USER=${GMAIL_USER}
+      - GMAIL_PASSWORD=${GMAIL_APP_PASSWORD}
+      - TARGET_DOMAIN=${TARGET_DOMAIN}
+      - RECIPIENT_EMAIL=${RECIPIENT_EMAIL}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./app:/app/app
+
+  scheduler:
+    build: .
+    command: celery -A app.tasks:celery beat --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://seo_user:seo_password@db:5432/seo_tracker
+      - REDIS_URL=redis://redis:6379/0
+      - SERPAPI_KEY=${SERPAPI_KEY}
+      - GMAIL_USER=${GMAIL_USER}
+      - GMAIL_PASSWORD=${GMAIL_APP_PASSWORD}
+      - TARGET_DOMAIN=${TARGET_DOMAIN}
+      - RECIPIENT_EMAIL=${RECIPIENT_EMAIL}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./app:/app/app
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=seo_tracker
+      - POSTGRES_USER=seo_user
+      - POSTGRES_PASSWORD=seo_password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:

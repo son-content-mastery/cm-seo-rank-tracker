@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SEO Rank Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2" style="color: #2c3e50 !important;">SEO Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="refresh-btn">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+        <div class="btn-group">
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#checkModal">
+                <i class="fas fa-search"></i> Run Check
+            </button>
+            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#reportModal">
+                <i class="fas fa-envelope"></i> Send Report
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stat-card p-3">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <div class="stat-number">{{ stats.total_keywords or 0 }}</div>
+                    <div class="text-muted">Total Keywords</div>
+                </div>
+                <div class="text-primary">
+                    <i class="fas fa-tags fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card p-3">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <div class="stat-number">{{ stats.ranked_keywords or 0 }}</div>
+                    <div class="text-muted">Ranking ({{ stats.ranking_percentage or 0 }}%)</div>
+                </div>
+                <div class="text-success">
+                    <i class="fas fa-chart-line fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card p-3">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <div class="stat-number">{{ stats.top_10_count or 0 }}</div>
+                    <div class="text-muted">Top 10 Rankings</div>
+                </div>
+                <div class="text-warning">
+                    <i class="fas fa-trophy fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card p-3">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <div class="stat-number">{{ "%.1f"|format(stats.average_position or 0) }}</div>
+                    <div class="text-muted">Avg Position</div>
+                </div>
+                <div class="text-info">
+                    <i class="fas fa-calculator fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Summary -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="stat-card p-3">
+            <h5 class="mb-3">Recent Changes</h5>
+            <div class="row text-center">
+                <div class="col">
+                    <div class="h4 text-success">{{ stats.improvements or 0 }}</div>
+                    <small class="text-muted">Improvements</small>
+                </div>
+                <div class="col">
+                    <div class="h4 text-danger">{{ stats.declines or 0 }}</div>
+                    <small class="text-muted">Declines</small>
+                </div>
+                <div class="col">
+                    <div class="h4 text-primary">{{ stats.new_rankings or 0 }}</div>
+                    <small class="text-muted">New Rankings</small>
+                </div>
+                <div class="col">
+                    <div class="h4 text-info">{{ stats.top_3_count or 0 }}</div>
+                    <small class="text-muted">Top 3</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Keywords Table -->
+<div class="stat-card">
+    <div class="card-header bg-white border-bottom">
+        <h5 class="mb-0">Keyword Rankings</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if keywords %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Keyword</th>
+                        <th>Position</th>
+                        <th>Change</th>
+                        <th>URL</th>
+                        <th>Last Checked</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for keyword in keywords %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold">{{ keyword.keyword }}</div>
+                            <small class="text-muted">{{ keyword.domain }}</small>
+                        </td>
+                        <td>
+                            {% if keyword.position %}
+                                {% if keyword.position <= 3 %}
+                                    <span class="position-excellent">#{{ keyword.position }}</span>
+                                {% elif keyword.position <= 10 %}
+                                    <span class="position-good">#{{ keyword.position }}</span>
+                                {% else %}
+                                    <span class="position-poor">#{{ keyword.position }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">Not in top 100</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if keyword.change_direction == 'up' %}
+                                <span class="badge change-badge change-up">
+                                    {% if keyword.position_change %}+{{ keyword.position_change * -1 }}{% else %}Improved{% endif %}
+                                </span>
+                            {% elif keyword.change_direction == 'down' %}
+                                <span class="badge change-badge change-down">
+                                    {% if keyword.position_change %}-{{ keyword.position_change }}{% else %}Declined{% endif %}
+                                </span>
+                            {% elif keyword.change_direction == 'new' %}
+                                <span class="badge change-badge change-new">
+                                    New
+                                </span>
+                            {% elif keyword.change_direction == 'lost' %}
+                                <span class="badge change-badge change-down">
+                                    Lost
+                                </span>
+                            {% else %}
+                                <span class="badge change-badge change-same">
+                                    No Change
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if keyword.url %}
+                                <a href="{{ keyword.url }}" target="_blank" class="text-decoration-none">
+                                    {{ keyword.url[:40] }}{% if keyword.url|length > 40 %}...{% endif %}
+                                    <i class="fas fa-external-link-alt ms-1"></i>
+                                </a>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if keyword.last_checked %}
+                                <span class="text-muted">{{ keyword.last_checked.strftime('%Y-%m-%d') }}</span>
+                            {% else %}
+                                <span class="text-muted">Never</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-primary btn-sm" 
+                                        onclick="checkSingleKeyword({{ keyword.id }})">
+                                    <i class="fas fa-sync"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-info btn-sm" 
+                                        onclick="viewHistory({{ keyword.id }})">
+                                    <i class="fas fa-history"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No keywords configured</h5>
+            <p class="text-muted">Add some keywords to start tracking rankings.</p>
+            <a href="{{ url_for('main.keywords_list') }}" class="btn btn-primary">
+                Add Keywords
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modals -->
+<!-- Check Modal -->
+<div class="modal fade" id="checkModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Run Ranking Check</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('main.trigger_manual_check') }}">
+                <div class="modal-body">
+                    <p>Choose the type of ranking check to run:</p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="type" id="checkAll" value="all" checked>
+                        <label class="form-check-label" for="checkAll">
+                            <strong>Full Check</strong> - Check all active keywords
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="type" id="checkSingle" value="single">
+                        <label class="form-check-label" for="checkSingle">
+                            <strong>Single Keyword</strong> - Check one specific keyword
+                        </label>
+                    </div>
+                    <div id="keywordSelect" class="mt-3" style="display: none;">
+                        <select class="form-select" name="keyword_id">
+                            <option value="">Select a keyword...</option>
+                            {% for keyword in keywords %}
+                            <option value="{{ keyword.id }}">{{ keyword.keyword }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle"></i>
+                        Checks run in the background. Results will appear when complete.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Start Check</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Report Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Ranking Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('main.trigger_report') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="recipient" class="form-label">Recipient Email</label>
+                        <input type="email" class="form-control" id="recipient" name="recipient" 
+                               placeholder="Enter email address (optional)">
+                        <div class="form-text">Leave empty to use default recipient</div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-envelope"></i>
+                        This will send a report with current ranking data.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Send Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Show/hide keyword selector based on check type
+document.querySelectorAll('input[name="type"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        const keywordSelect = document.getElementById('keywordSelect');
+        if (this.value === 'single') {
+            keywordSelect.style.display = 'block';
+        } else {
+            keywordSelect.style.display = 'none';
+        }
+    });
+});
+
+// Single keyword check function
+function checkSingleKeyword(keywordId) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ url_for("main.trigger_manual_check") }}';
+    
+    const typeInput = document.createElement('input');
+    typeInput.type = 'hidden';
+    typeInput.name = 'type';
+    typeInput.value = 'single';
+    
+    const keywordInput = document.createElement('input');
+    keywordInput.type = 'hidden';
+    keywordInput.name = 'keyword_id';
+    keywordInput.value = keywordId;
+    
+    form.appendChild(typeInput);
+    form.appendChild(keywordInput);
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// View history function (placeholder)
+function viewHistory(keywordId) {
+    // This could open a modal with historical data
+    window.open(`/api/keyword/${keywordId}/history`, '_blank');
+}
+
+// Auto-refresh every 5 minutes
+setInterval(function() {
+    // Only refresh if no modals are open
+    if (!document.querySelector('.modal.show')) {
+        location.reload();
+    }
+}, 300000); // 5 minutes
+</script>
+{% endblock %}
